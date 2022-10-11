@@ -52,7 +52,7 @@ class Relay:
             info = self.get_info()
             return f" family={info['family']}, version={info['version']}, id={info['id']}, state={self.get_state()}"
         else:
-            return "No MP709 device"
+            return "No relays"
 
     @property
     def device_id(self):
@@ -79,10 +79,13 @@ class Relay:
             except usb.core.USBError as e:
                 logger.warning(
                     f"Permissions required:\n\tAdd rule to the /etc/udev/rules.d/10-local.rules file:\n"
-                    "\t\t'SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"20a0\", ATTRS{idProduct}==\"4173\", "
-                    "GROUP=\"masterkit\", MODE=\"0666\"'\n"
-                    "\tCreate group:\n\t\tsudo groupadd masterkit\n"
-                    "\tAdd current user to the group:\n\t\tsudo adduser $USER masterkit\n"
+                    "\t\t'SUBSYSTEMS==\"usb\", ATTRS{idVendor}=="
+                    f"\"{self.dev.idVendor:#04x}\", "
+                    "ATTRS{idProduct}=="
+                    f"\"{self.dev.idProduct:#04x}\", "
+                    "GROUP=\"usbrelay\", MODE=\"0666\"'\n"
+                    "\tCreate group:\n\t\tsudo groupadd usbrelay\n"
+                    "\tAdd current user to the group:\n\t\tsudo adduser $USER usbrelay\n"
                     "\tReload rules:\n\t\tsudo udevadm control --reload-rules && sudo udevadm trigger"
                 )
                 logger.exception(e)
