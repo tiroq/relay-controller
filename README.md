@@ -23,3 +23,19 @@ sudo adduser $USER usbrelay
 ```bash
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
+
+# Supported devices
+- mp709
+- RODOS-1
+- RODOS-1B
+- RODOS-1N
+- RODOS-3
+- RODOS-3 mini
+- RODOS-3 USB B
+- RODOS-3B
+- RODOS-3BN
+- RODOS-4R6 N
+- RODOS-4R6 NS
+- RODOS-4R10 N
+- RODOS-4R16 DIN MG
+- RODOS-4R16 N
