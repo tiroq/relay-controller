@@ -6,7 +6,7 @@ Before you start using the relay-controller, you should prepare your system. Her
 
 1. Add permissions for the USB device by adding following line to the /etc/udev/rules.d/10-local.rules:
 ```bash
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="<vendor of the relay>", "ATTRS{idProduct}=="<product of the relay>", GROUP="usbrelay", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="<vendor of the relay>", ATTRS{idProduct}=="<product of the relay>", GROUP="usbrelay", MODE="0666"
 ```
 This line will give the necessary permissions to the USB device, so you can use it with the relay-controller.
 
