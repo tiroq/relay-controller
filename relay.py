@@ -223,8 +223,7 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=args.log_level)
 
-    DevicesManager()
-    # .do(action=args.action, device_id=args.id)
+    DevicesManager().do(action=args.action, device_id=args.id)
 
 
 if __name__ == "__main__":
