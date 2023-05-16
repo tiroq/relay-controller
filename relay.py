@@ -141,17 +141,19 @@ class DevicesManager:
         relays = []
         for bus in busses:
             for dev in bus.devices:
+                xdev = usb.core.find(idVendor=dev.idVendor, idProduct=dev.idProduct)
                 try:
-                    xdev = usb.core.find(idVendor=dev.idVendor, idProduct=dev.idProduct)
                     product = xdev.product
-                except ValueError:
+                except ValueError as e:
                     logger.debug(f"Device Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
-                                 f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped")
+                                 f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped:\n{e}")
                     continue
+
                 if product is None:
                     logger.debug(f"Device Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
-                                 f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped")
+                                 f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped(Product is None)")
                     continue
+
                 if product.startswith('RODOS-3'):
                     logger.info(f"Relay detected Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
                                 f"Product: {dev.idProduct}({dev.idProduct:#04x})")
@@ -160,17 +162,51 @@ class DevicesManager:
                 except ValueError:
                     pass
                 else:
-                    relays.append(relay)
+                    logger.debug(f"Relay added Vendor: {dev.idVendor}({dev.idVendor:#04x})")
+                    return [relay]
+        return relays
+
+    def sget_devices(self):
+        relays = []
+        for dev in usb.core.find(find_all=True, bDeviceClass=0):
+            logger.info(f"Device found by bDeviceClass: {dev}")
+            xdev = usb.core.find(idVendor=dev.idVendor, idProduct=dev.idProduct)
+            logger.info(f"Device found by idVendor/idProduct: {xdev}")
+            try:
+                product = xdev.product
+            except ValueError as e:
+                logger.debug(f"Device Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
+                             f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped:\n{e}")
+                continue
+
+            if product is None:
+                logger.debug(f"Device Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
+                             f"Product: {dev.idProduct}({dev.idProduct:#04x}) skipped(Product is None)")
+                continue
+
+            if product.startswith('RODOS-3'):
+                logger.info(f"Relay detected Vendor: {dev.idVendor}({dev.idVendor:#04x}), "
+                            f"Product: {dev.idProduct}({dev.idProduct:#04x})")
+            try:
+                relay = Relay(dev)
+            except ValueError:
+                pass
+            else:
+                logger.debug(f"Relay added Vendor: {dev.idVendor}({dev.idVendor:#04x})")
+                relays.append(relay)
         return relays
 
     def do(self, action, device_id: int = 0):
         for relay in self._relays:
             if device_id == 0 or relay.device_id == device_id:
-                logger.info(f"Do {action = } for relay with {relay.device_id = }")
+                logger.info(f"Do {action = } for relay with {relay.device_id = :#04x}")
                 if action in (State.on.name, State.off.name):
                     relay.set_state(action == State.on.name)
                 elif action == State.toggle.name:
                     relay.set_state(not relay.get_state())
+                elif action == State.no_change.name:
+                    state = relay.get_state()
+                    logger.info(f"Relay {state = }")
 
 
 def main():
@@ -187,7 +223,8 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=args.log_level)
 
-    DevicesManager().do(action=args.action, device_id=args.id)
+    DevicesManager()
+    # .do(action=args.action, device_id=args.id)
 
 
 if __name__ == "__main__":
